@@ -26,7 +26,7 @@ We will start indexing the timesteps from 1 as discussed in the first example. T
 As opposed to what happens with oasis GET, a restarting field should be set explicitly when calling the first `xios_recv_field`:
 
 ```fortran
-!!! First receive explicitly on the restart field from the related file
+!!! First reception is done explicitly on the restart field from the related file
 IF (curr_timestep == 1) THEN
     CALL xios_recv_field("field2D_restart", field_recv)
     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
