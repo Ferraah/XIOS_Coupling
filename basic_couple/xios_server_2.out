@@ -1,10 +1,10 @@
 -> report :  Memory report : Context <default_pool_id__default_writer_id_0__atm> : server side : total memory used for buffer 0 bytes
 -> report :  Memory report : Context <default_pool_id__default_writer_id_0__ocn> : server side : total memory used for buffer 0 bytes
 -> report :  Memory report : Context <default_pool_id__default_reader_id_0__ocn> : server side : total memory used for buffer 0 bytes
--> report : Performance report : Time spent for XIOS : 0.628061
--> report : Performance report : Time spent in processing events : 0.139484
--> report : Performance report : Ratio : 22.2087%
--> report : lock exclusive : accumulated time : 0.0246384 --- call number : 2987 --- average time : 8.24855e-06
--> report : lock shared : accumulated time : 3.75165e-05 --- call number : 7 --- average time : 5.3595e-06
--> report : unlock exclusive : accumulated time : 0.00879295 --- call number : 2987 --- average time : 2.94374e-06
--> report : unlock shared : accumulated time : 7.15815e-06 --- call number : 7 --- average time : 1.02259e-06
+-> report : Performance report : Time spent for XIOS : 0.591197
+-> report : Performance report : Time spent in processing events : 0.127975
+-> report : Performance report : Ratio : 21.6468%
+-> report : lock exclusive : accumulated time : 0.0229275 --- call number : 2728 --- average time : 8.4045e-06
+-> report : lock shared : accumulated time : 5.92796e-05 --- call number : 7 --- average time : 8.46852e-06
+-> report : unlock exclusive : accumulated time : 0.00786293 --- call number : 2728 --- average time : 2.88231e-06
+-> report : unlock shared : accumulated time : 6.32461e-06 --- call number : 7 --- average time : 9.03516e-07

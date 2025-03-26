@@ -70,5 +70,8 @@ Then, in addition to the coupling field, we refer to this field from file to sen
 </coupler_in_definition>
 ```
 
+## Notes
+Using different grids reference for both `field2D_oce_to_atm` and `field2D_restart` seems to trigger a `SEGFAULT`
+
 
 
