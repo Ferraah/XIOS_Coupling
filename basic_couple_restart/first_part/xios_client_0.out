@@ -1,0 +1,14 @@
+-> report :  Memory report : Context <ocn> : client side : memory used for buffer of each connection to server
+  +) To server with rank 0 : 8192 bytes 
+-> report :  Memory report : Context <ocn> : client side : total memory used for buffer 8192 bytes
+-> report :  Performance report : Whole time from XIOS init and finalize: 0.312646 s
+-> report :  Performance report : total time spent for XIOS : 0.335509 s
+-> report :  Performance report : time spent for waiting free buffer : 0.0102208 s
+-> report :  Performance report : Ratio : 3.26912 %
+-> report :  Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server
+-> report :  Memory report : Minimum buffer size required : 0 bytes
+-> report :  Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file
+-> report : lock exclusive : accumulated time : 0.0027145 --- call number : 1131 --- average time : 2.40009e-06
+-> report : lock shared : accumulated time : 5.503e-05 --- call number : 21 --- average time : 2.62048e-06
+-> report : unlock exclusive : accumulated time : 0.00143787 --- call number : 1131 --- average time : 1.27133e-06
+-> report : unlock shared : accumulated time : 2.77087e-05 --- call number : 21 --- average time : 1.31946e-06

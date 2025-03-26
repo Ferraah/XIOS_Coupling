@@ -1,0 +1,20 @@
+-> info : ENTERING CStoreFilter::getPacket
+-> info : ENTERING CStoreFilter::getPacket
+-> info : ENTERING CStoreFilter::getPacket
+-> info : ENTERING CStoreFilter::getPacket
+-> info : ENTERING CStoreFilter::getPacket
+-> info : ENTERING CStoreFilter::getPacket
+-> report :  Memory report : Context <atm> : client side : memory used for buffer of each connection to server
+  +) To server with rank 0 : 8192 bytes 
+-> report :  Memory report : Context <atm> : client side : total memory used for buffer 8192 bytes
+-> report :  Performance report : Whole time from XIOS init and finalize: 0.62344 s
+-> report :  Performance report : total time spent for XIOS : 0.663132 s
+-> report :  Performance report : time spent for waiting free buffer : 0.00556605 s
+-> report :  Performance report : Ratio : 0.892796 %
+-> report :  Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server
+-> report :  Memory report : Minimum buffer size required : 0 bytes
+-> report :  Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file
+-> report : lock exclusive : accumulated time : 0.0025527 --- call number : 1090 --- average time : 2.34192e-06
+-> report : lock shared : accumulated time : 0.000230782 --- call number : 67 --- average time : 3.4445e-06
+-> report : unlock exclusive : accumulated time : 0.00137441 --- call number : 1090 --- average time : 1.26093e-06
+-> report : unlock shared : accumulated time : 8.29408e-05 --- call number : 67 --- average time : 1.23792e-06

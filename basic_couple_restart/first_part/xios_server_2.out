@@ -1,0 +1,8 @@
+-> report :  Memory report : Context <default_pool_id__default_writer_id_0__ocn> : server side : total memory used for buffer 0 bytes
+-> report : Performance report : Time spent for XIOS : 0.318776
+-> report : Performance report : Time spent in processing events : 0.0471469
+-> report : Performance report : Ratio : 14.79%
+-> report : lock exclusive : accumulated time : 0.013984 --- call number : 1766 --- average time : 7.91848e-06
+-> report : lock shared : accumulated time : 2.93618e-05 --- call number : 7 --- average time : 4.19454e-06
+-> report : unlock exclusive : accumulated time : 0.00504815 --- call number : 1766 --- average time : 2.85852e-06
+-> report : unlock shared : accumulated time : 6.63754e-06 --- call number : 7 --- average time : 9.48219e-07
