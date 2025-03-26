@@ -73,5 +73,69 @@ Then, in addition to the coupling field, we refer to this field from file to sen
 ## Notes
 Using different grids reference for both `field2D_oce_to_atm` and `field2D_restart` seems to trigger a `SEGFAULT`
 
-
+# Output
+```
+ Model atm received    26.0000000000000       @ts =            1
+ Model ocn sended @ts =           1
+ Model atm received    1.00000000000000       @ts =            5
+ Model ocn sended @ts =           5
+ Model atm received    5.00000000000000       @ts =            9
+ Model ocn sended @ts =           9
+ Model atm received    9.00000000000000       @ts =           13
+ Model ocn sended @ts =          13
+ Model atm received    13.0000000000000       @ts =           17
+ Model ocn sended @ts =          17
+ Model atm received    17.0000000000000       @ts =           21
+ Model ocn sended @ts =          21
+ Model atm received    21.0000000000000       @ts =           25
+ Model ocn sended @ts =          25
+ Model atm received    25.0000000000000       @ts =           29
+ Model ocn sended @ts =          29
+ Model atm received    29.0000000000000       @ts =           33
+ Model ocn sended @ts =          33
+ Model atm received    33.0000000000000       @ts =           37
+ Model ocn sended @ts =          37
+ Model atm received    37.0000000000000       @ts =           41
+ Model ocn sended @ts =          41
+ Model atm received    41.0000000000000       @ts =           45
+ Model ocn sended @ts =          45
+ Model atm received    45.0000000000000       @ts =           49
+ Model ocn sended @ts =          49
+ Model atm received    49.0000000000000       @ts =           53
+ Model ocn sended @ts =          53
+ Model atm received    53.0000000000000       @ts =           57
+ Model ocn sended @ts =          57
+ Model atm received    57.0000000000000       @ts =           61
+ Model ocn sended @ts =          61
+ Model atm received    61.0000000000000       @ts =           65
+ Model ocn sended @ts =          65
+ Model atm received    65.0000000000000       @ts =           69
+ Model ocn sended @ts =          69
+ Model atm received    69.0000000000000       @ts =           73
+ Model ocn sended @ts =          73
+ Model atm received    73.0000000000000       @ts =           77
+ Model ocn sended @ts =          77
+ Model atm received    77.0000000000000       @ts =           81
+ Model ocn sended @ts =          81
+ Model atm received    81.0000000000000       @ts =           85
+ Model ocn sended @ts =          85
+ Model atm received    85.0000000000000       @ts =           89
+ Model ocn sended @ts =          89
+ Model atm received    89.0000000000000       @ts =           93
+ Model ocn sended @ts =          93
+ Model atm received    93.0000000000000       @ts =           97
+ Model ocn sended @ts =          97
+ Model atm received    97.0000000000000       @ts =          101
+ Model ocn sended @ts =         101
+ Model atm received    101.000000000000       @ts =          105
+ Model ocn sended @ts =         105
+ Model atm received    105.000000000000       @ts =          109
+ Model ocn sended @ts =         109
+ Model atm received    109.000000000000       @ts =          113
+ Model ocn sended @ts =         113
+ Model atm received    113.000000000000       @ts =          117
+ Model ocn sended @ts =         117
+ Model atm received    117.000000000000       @ts =          121
+ Model ocn sended @ts =         121
+```
 
