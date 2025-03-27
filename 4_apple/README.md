@@ -10,7 +10,7 @@ CALL xios_get_domain_attr("domain", ni_glo=ni_glo, nj_glo=nj_glo)
 ```
 We will use this information to calculate the local size of the field to send by each process. 
 ```fortran
-ni = ni_glo/(size-2)
+ni = ni_glo/(size-2) ! Divide by number of ocean processes
 nj = nj_glo
 ibegin = (rank)*ni
 jbegin = 0

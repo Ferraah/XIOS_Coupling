@@ -134,7 +134,7 @@ CONTAINS
         CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
 
         !  Defining the local sizes and offsets !!!!!!!!!
-        ni = ni_glo/(size-2)
+        ni = ni_glo/(size-2) ! Divide by number of ocean processes 
         nj = nj_glo
         ibegin = (rank)*ni
         jbegin = 0
