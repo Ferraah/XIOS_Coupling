@@ -113,7 +113,6 @@ CONTAINS
         CALL xios_get_domain_attr("domain", ni_glo=ni_glo, nj_glo=nj_glo)
 
         ! Close the context definition
-        CALL xios_close_context_definition()
 
 
     END SUBROUTINE initEnvironment
@@ -146,6 +145,8 @@ CONTAINS
         END IF
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+        CALL xios_close_context_definition()
+        
         ALLOCATE(field_send(ni, nj))
         ALLOCATE(field_recv(ni_glo, nj_glo))
 

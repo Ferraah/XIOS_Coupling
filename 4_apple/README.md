@@ -29,5 +29,3 @@ which will be sent by the process and gathered by XIOS:
 ```fortran 
 CALL xios_send_field("field2D_oce_to_atm", field_send)
 ```
-# Notes
-With the current size configuration of the domain (`ni_glo=60 & nj_glo=20`), XIOS can gather run only when Ocean processes are: 1, 3, 4, 12 and maybe more, for unknown reasons.
