@@ -1,6 +1,6 @@
 # Monodirectional coupling of a single field with no restart file (Parallel send)
 
-Same scenario as `1_singlefield`, but the sending of the field is parallelized on multiple instances of `ocn`. 
+Same scenario as `1_singlefield`, but the sending of the field is parallelized on multiple instances of `ocn` following the "Apple" paradigm 
 
 # Modifications
 
