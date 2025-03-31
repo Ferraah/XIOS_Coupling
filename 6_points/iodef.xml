@@ -10,9 +10,7 @@
         <!-- Ocean field grid definition -->
         <grid_definition>
         <grid id="grid_2D">
-            <domain id="domain" type="rectilinear" ni_glo="10" nj_glo="10">
-            <generate_rectilinear_domain/>
-            </domain>
+            <domain id="domain" type="rectilinear" ni_glo="4" nj_glo="4"/>
         </grid>
         </grid_definition>
 
@@ -39,7 +37,7 @@
         <file_definition>
 
         <!-- Save field on file after 121 ts (The last send)-->
-        <file id="output_out" name="output_out_next" output_freq="124ts" type="one_file" enabled="true">
+        <file id="output_out" name="output_out_next" output_freq="121ts" type="one_file" enabled="true">
             <field field_ref="field2D_oce_to_atm"  operation="instant" />
         </file>
 
@@ -61,12 +59,12 @@
         <grid_definition>
 
             <grid id="grid_2D">
-                <domain id="domain"/>
+                <domain id="domain" type="rectilinear" ni_glo="4" nj_glo="4"/>
             </grid>
 
         </grid_definition>
 
-         <variable_definition>
+        <variable_definition>
             <!-- Simulate month of January -->
             <variable id="timestep_duration">6h</variable>
             <variable id="duration">31d</variable>

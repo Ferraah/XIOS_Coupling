@@ -23,11 +23,11 @@ These are two attributes used in xios fro various tasks. In our coupling envirno
 The choice of `freq_offset` requires considering a subtle detail: as `@ts=0` is considered a special case in XIOS, a field cannot be sent but just received during this time state. Hence we want to shift the timeline by one timestep making the algorithms easier to visualize. Indeed, fields are sent by default `@ts=1` and there is no need for defining an offset. Receptions can be made from 0, hence the need to offset the first one with `freq_offset="1ts"`.
 
 ### xios_send_field & xios_recv_field
-The routine `xios_recv_field` will return whatever is stored in the buffer that was sent using `xios_send_field`, independently of whether the current timestep is a coupling one. **For coupling purposes, `xios_recv_field` should be called only on the "right" timesteps.**
+The routine `xios_recv_field` will return whatever is stored in the buffer that was sent using `xios_send_field`, independently of whether the current timestep is a coupling one. **For this reason, `xios_recv_field` should be called only on the "right" timesteps.**
 ```fortran
 ! Receive field starting from 1 with a certain frequency
 IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
+    CALL xios_recv_field("field2D_recv", field_recv)
     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
 END IF
 ```

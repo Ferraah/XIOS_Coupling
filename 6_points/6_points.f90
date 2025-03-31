@@ -25,20 +25,19 @@ PROGRAM basic_couple
     CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 
 
-    ! FOR THIS TEST: 3 processes: 1 server, 2 clients
-    IF (size /= 3) THEN
-        PRINT *, "This program must be run with 3 processes. Currently, there are ", size, " processes."
+    IF (size /= 4) THEN
+        PRINT *, "This program must be run with 4 processes. Currently, there are ", size, " processes."
         CALL MPI_FINALIZE(ierr)
         STOP
     END IF
 
     ! Assign roles to the processes
-    IF (rank == 2) THEN
+    IF (rank == size-1) THEN
         is_server = .TRUE.
-    ELSE IF (rank == 0) THEN
-        is_client_ocn = .TRUE.
-    ELSE IF (rank == 1) THEN
+    ELSE IF (rank == size-2) THEN
         is_client_atm = .TRUE.
+    ELSE 
+        is_client_ocn = .TRUE.
     END IF
 
 
@@ -62,11 +61,12 @@ PROGRAM basic_couple
 CONTAINS
     
     ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
-    SUBROUTINE initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op)
+    SUBROUTINE initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
         CHARACTER(LEN=*), INTENT(IN) :: model_id
         TYPE(xios_date), INTENT(OUT) :: x_start_date, x_end_date
         TYPE(xios_duration), INTENT(OUT) :: x_timestep, x_duration
         INTEGER, INTENT(OUT) :: freq_op
+        INTEGER :: ni_glo, nj_glo
         INTEGER :: local_comm
         TYPE(xios_context) :: ctx
         TYPE(xios_duration) :: x_freq_op
@@ -109,8 +109,9 @@ CONTAINS
         READ(tmp, *) freq_op
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+        CALL xios_get_domain_attr("domain", ni_glo=ni_glo, nj_glo=nj_glo)
+
         ! Close the context definition
-        CALL xios_close_context_definition()
 
 
     END SUBROUTINE initEnvironment
@@ -123,25 +124,54 @@ CONTAINS
         TYPE(xios_duration) :: x_timestep, x_duration, x_freq_op
         INTEGER :: freq_op
 
+        INTEGER :: ni_glo, nj_glo, ni, nj, ibegin, jbegin
+        INTEGER, POINTER :: data_i_index(:), data_j_index(:)
         DOUBLE PRECISION, POINTER :: field_send(:,:)
         DOUBLE PRECISION, POINTER :: field_recv(:,:)
 
         ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
-        CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op)
+        CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
 
-        ALLOCATE(field_send(10,10))
-        ALLOCATE(field_recv(10,10))
+        ALLOCATE(data_i_index(4))
+        ALLOCATE(data_j_index(4))
+        ALLOCATE(field_send(4,4))
+        ALLOCATE(field_recv(4,4))
+        
+        ni = ni_glo
+        nj = nj_glo
+        ibegin = 0
+        jbegin = 0
 
+        IF (rank == 0) THEN
+            data_i_index = [3,0,1,3,0,2,3,0]
+            data_j_index = [0,1,1,1,2,2,2,3]
+        ELSE IF (rank == 1) THEN
+            data_i_index = [0,1,2,2,1,1,2,3]
+            data_j_index = [0,0,0,1,2,3,3,3]
+        END IF
+
+        !  Defining the local sizes and offsets !!!!!!!!!
+        ! ni = ni_glo/(size-2) ! Divide by number of ocean processes 
+        ! nj = nj_glo
+        ! ibegin = (rank)*ni
+        ! jbegin = 0
+        
+        IF (model_id == "ocn") THEN
+            ! Add the local sizes and begin indices to the domain referred in the xml
+            CALL xios_set_domain_attr("domain", ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, data_i_index=data_i_index, data_j_index=data_j_index)
+            print * , "Model ", model_id, " ni_glo = ", ni_glo, " nj_glo = ", nj_glo, " ni = ", ni, " nj = ", nj, " ibegin = ", ibegin, " jbegin = ", jbegin
+        END IF
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        CALL xios_close_context_definition()
+        
+        
         ! XIOS preference to start from 1
         x_curr_date = x_start_date
         curr_timestep = 1
 
         print *, "Model ",model_id, " is starting"
-        
-        IF (rank == 0) THEN
-            print *, "Model ",model_id, " x_start_date = ", x_start_date
-            print *, "Model ",model_id, " x_end_date = ", x_end_date
-        END IF
+
 
         ! Iterate for the duration of the simulation (x_end ecluded)
         DO WHILE (x_curr_date < x_end_date)
@@ -152,21 +182,22 @@ CONTAINS
             field_send = curr_timestep ! Assigning the field values to the current timestep for testing
 
             ! Ocean sends to atmosphere
-            IF(rank == 0) THEN
+            IF(model_id == "ocn" .and. rank==0) THEN
 
-                CALL xios_send_field("field2D_send", field_send)
+                ! Start sending field starting from 1 with a certain frequency
+                    CALL xios_send_field("field2D_accumulate", field_send)
                 print *, "Model ", model_id, " sended @ts =", curr_timestep
 
             ! Atmosphere receives data from ocean
-            ELSE IF(rank == 1) THEN
+            ELSE IF(model_id == "atm") THEN
 
-                !!! First receive explicitly on the restart field from the related file
+                ! Start receiving field starting from 1 with a certain frequency
+                !!!! "GET" call at the desired timestep EXPLICITLY
                 IF (curr_timestep == 1) THEN
                     CALL xios_recv_field("field2D_restart", field_recv)
                     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
-                !!!! "GET" call at the desired timestep EXPLICITLY
                 ELSE IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_recv_field("field2D_recv", field_recv)
+                    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
                     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
                 END IF
 
