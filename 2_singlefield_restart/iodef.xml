@@ -25,7 +25,7 @@
         <!-- Field reference for xios_send_field -->
         <field_definition>
             <!-- It will average on this field -->
-            <field id="field2D_send" grid_ref="grid_2D"  operation="average" read_access="true" expr="@this"/>
+            <field id="field2D_send" grid_ref="grid_2D"  operation="instant" read_access="true" expr="@this"/>
         </field_definition>
 
         <coupler_out_definition>
