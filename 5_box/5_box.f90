@@ -25,7 +25,7 @@ PROGRAM basic_couple
     CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 
 
-    IF (size \= 6) THEN
+    IF (size /= 6) THEN
         PRINT *, "This program must be run with 6 processes. Currently, there are ", size, " processes."
         CALL MPI_FINALIZE(ierr)
         STOP
@@ -129,21 +129,20 @@ CONTAINS
         ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
         CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
 
-        !  Defining the local sizes and offsets !!!!!!!!!
-        ! ni = ni_glo/(size-2) ! Divide by number of ocean processes
-        ! nj = nj_glo
-        ! ibegin = (rank)*ni
-        ! jbegin = 0
-        begin_points(1, :) = [0, 0]
+        ! For this toy model, we define the local sizes and offsets manually.
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        begin_points(1, :) = [0, 0] ! Rank 0 (ibegin, jbegin)
         begin_points(2, :) = [24, 0]
         begin_points(3, :) = [0, 10]
-        begin_points(4, :) = [36, 10]
+        begin_points(4, :) = [36, 10] ! Rank 3 (ibegin, jbegin)
 
-        nij(1, :) = [24, 10]
+        nij(1, :) = [24, 10] ! Rank 0 (ni, nj)
         nij(2, :) = [36, 10]
         nij(3, :) = [36, 10]
-        nij(4, :) = [24, 10]
+        nij(4, :) = [24, 10] ! Rank 3 (ni, nj)
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+        ! Defining the local sizes and offsets
         ni = nij(rank+1, 1)
         nj = nij(rank+1, 2)
         ibegin = begin_points(rank+1, 1)
@@ -154,9 +153,9 @@ CONTAINS
             CALL xios_set_domain_attr("domain", ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin)
             print * , "Model ", model_id, " ni_glo = ", ni_glo, " nj_glo = ", nj_glo, " ni = ", ni, " nj = ", nj, " ibegin = ", ibegin, " jbegin = ", jbegin
         END IF
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         CALL xios_close_context_definition()
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         ALLOCATE(field_send(ni, nj))
         ALLOCATE(field_recv(ni_glo, nj_glo))
@@ -179,11 +178,8 @@ CONTAINS
             ! Ocean sends to atmosphere
             IF(model_id == "ocn") THEN
 
-                ! Start sending field starting from 1 with a certain frequency
-                IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_send_field("field2D_oce_to_atm", field_send)
-                    print *, "Model ", model_id, " sended @ts =", curr_timestep
-                END IF
+                CALL xios_send_field("field2D_send", field_send)
+                print *, "Model ", model_id, " sended @ts =", curr_timestep
 
             ! Atmosphere receives data from ocean
             ELSE IF(model_id == "atm") THEN
@@ -191,7 +187,7 @@ CONTAINS
                 ! Start receiving field starting from 1 with a certain frequency
                 !!!! "GET" call at the desired timestep EXPLICITLY
                 IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
+                    CALL xios_recv_field("field2D_recv", field_recv)
                     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
                 END IF
 

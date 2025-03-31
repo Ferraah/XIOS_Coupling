@@ -168,11 +168,8 @@ CONTAINS
             ! Ocean sends to atmosphere
             IF(model_id == "ocn") THEN
 
-                ! Start sending field starting from 1 with a certain frequency
-                IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_send_field("field2D_oce_to_atm", field_send)
-                    print *, "Model ", model_id, " sended @ts =", curr_timestep
-                END IF
+                CALL xios_send_field("field2D_send", field_send)
+                print *, "Model ", model_id, " sended @ts =", curr_timestep
 
             ! Atmosphere receives data from ocean
             ELSE IF(model_id == "atm") THEN
@@ -180,7 +177,7 @@ CONTAINS
                 ! Start receiving field starting from 1 with a certain frequency
                 !!!! "GET" call at the desired timestep EXPLICITLY
                 IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
+                    CALL xios_recv_field("field2D_recv", field_recv)
                     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
                 END IF
 

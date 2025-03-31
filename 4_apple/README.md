@@ -27,5 +27,5 @@ ALLOCATE(field_send(ni, nj))
 ```
 which will be sent by the process and gathered by XIOS:
 ```fortran 
-CALL xios_send_field("field2D_oce_to_atm", field_send)
+CALL xios_send_field("field2D_send", field_send)
 ```
