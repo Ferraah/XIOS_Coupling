@@ -87,7 +87,6 @@ class XiosCouplerPlotter:
             fancybox=True, shadow=True, ncol=2)
 
     def add_parameters_to_legend(self, ax, send_freq, recv_freq, send_offset, recv_offset):
-        # Workaround to add the parameters to the legend
         plt.plot([],[], ' ', label=f"send_freq: {send_freq} send_offset: {send_offset}\nrecv_freq: {recv_freq} recv_offset: {recv_offset}")
 
     def __init__(self, figsize=None, arrow_height=2, padding=0.2):
@@ -130,4 +129,4 @@ pl = XiosCouplerPlotter(arrow_height=2, padding=0.2)
 
 # Specific algorithm parameters for the plot
 #pl.plot(timesteps=20, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
-pl.plot(timesteps=21, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
+pl.plot(timesteps=20, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
