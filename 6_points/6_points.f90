@@ -124,44 +124,45 @@ CONTAINS
         TYPE(xios_duration) :: x_timestep, x_duration, x_freq_op
         INTEGER :: freq_op
 
-        INTEGER :: ni_glo, nj_glo, ni, nj, ibegin, jbegin
+        INTEGER :: ni_glo, nj_glo, ni, nj, ibegin, jbegin, data_ibegin, data_jbegin, data_dim, data_ni, data_nj, i
         INTEGER, POINTER :: data_i_index(:), data_j_index(:)
-        DOUBLE PRECISION, POINTER :: field_send(:,:)
+        DOUBLE PRECISION, POINTER :: field_send(:) ! 1D now
         DOUBLE PRECISION, POINTER :: field_recv(:,:)
 
         ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
         CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
 
-        ALLOCATE(data_i_index(4))
-        ALLOCATE(data_j_index(4))
-        ALLOCATE(field_send(4,4))
+        IF(ni_glo /=4 .or. nj_glo /=4) THEN
+            print *, "This example is only for 4x4 grid"
+            STOP
+        END IF
+
+        data_dim = 1 ! Source data is 1D
+        data_ni = 8 ! Length of data 
+        data_ibegin = 0 ! Offset of data wrt ibegin
+        ni = ni_glo ! Local partition size
+        nj = nj_glo ! Local partition size
+        ibegin = 0 ! Offset of the local partition wrt the global grid
+        jbegin = 0 ! Offset of the local partition wrt the global grid
+
+        ALLOCATE(data_i_index(data_ni)) ! Indices ao
+        ALLOCATE(field_send(data_ni))
         ALLOCATE(field_recv(4,4))
         
-        ni = ni_glo
-        nj = nj_glo
-        ibegin = 0
-        jbegin = 0
-
-        IF (rank == 0) THEN
-            data_i_index = [3,0,1,3,0,2,3,0]
-            data_j_index = [0,1,1,1,2,2,2,3]
-        ELSE IF (rank == 1) THEN
-            data_i_index = [0,1,2,2,1,1,2,3]
-            data_j_index = [0,0,0,1,2,3,3,3]
+        ! Checkboard distribution on two processes, 1D data source
+        IF (rank==0) THEN
+            data_i_index = [(i, i=0, 14, 2)]
+            field_send = [(0, i=0, 14, 2)]
+        ELSE
+            data_i_index = [(i, i=1, 15, 2)]
+            field_send = [(1, i=1, 15, 2)]
         END IF
 
-        !  Defining the local sizes and offsets !!!!!!!!!
-        ! ni = ni_glo/(size-2) ! Divide by number of ocean processes 
-        ! nj = nj_glo
-        ! ibegin = (rank)*ni
-        ! jbegin = 0
-        
         IF (model_id == "ocn") THEN
             ! Add the local sizes and begin indices to the domain referred in the xml
-            CALL xios_set_domain_attr("domain", ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, data_i_index=data_i_index, data_j_index=data_j_index)
+            CALL xios_set_domain_attr("domain", ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, data_ni=data_ni, data_i_index=data_i_index, data_ibegin=data_ibegin, data_dim=1)
             print * , "Model ", model_id, " ni_glo = ", ni_glo, " nj_glo = ", nj_glo, " ni = ", ni, " nj = ", nj, " ibegin = ", ibegin, " jbegin = ", jbegin
-        END IF
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        END IF 
 
         CALL xios_close_context_definition()
         
@@ -179,13 +180,12 @@ CONTAINS
             ! Communicate timestep increment to XIOS
             CALL xios_update_calendar(curr_timestep)
 
-            field_send = curr_timestep ! Assigning the field values to the current timestep for testing
 
             ! Ocean sends to atmosphere
-            IF(model_id == "ocn" .and. rank==0) THEN
+            IF(model_id == "ocn" ) THEN
 
                 ! Start sending field starting from 1 with a certain frequency
-                    CALL xios_send_field("field2D_accumulate", field_send)
+                CALL xios_send_field("field2D_send", field_send)
                 print *, "Model ", model_id, " sended @ts =", curr_timestep
 
             ! Atmosphere receives data from ocean
@@ -193,11 +193,8 @@ CONTAINS
 
                 ! Start receiving field starting from 1 with a certain frequency
                 !!!! "GET" call at the desired timestep EXPLICITLY
-                IF (curr_timestep == 1) THEN
-                    CALL xios_recv_field("field2D_restart", field_recv)
-                    print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
-                ELSE IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
+                IF (modulo(curr_timestep-1, freq_op) == 0) THEN
+                    CALL xios_recv_field("field2D_recv", field_recv)
                     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
                 END IF
 
@@ -209,7 +206,6 @@ CONTAINS
             curr_timestep = curr_timestep + 1 ! Timestep
 
         END DO
-
         DEALLOCATE(field_send)
         DEALLOCATE(field_recv)
 
