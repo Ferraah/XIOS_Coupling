@@ -18,8 +18,8 @@
 
         <variable_definition>
             <!-- Simulate month of January -->
-            <variable id="timestep_duration">6h</variable>
-            <variable id="duration">31d</variable>
+            <variable id="timestep_duration">1d</variable>
+            <variable id="duration">30d</variable>
         </variable_definition>
 
         <!-- Field reference for xios_send_field -->
@@ -31,7 +31,7 @@
         <coupler_out_definition>
             <coupler_out context="atm::atm" >
                 <!-- Define the interface for the outgoing field to be received in atmosphere -->
-                <field id="field2D_oce_to_atm" field_ref="field2D_send" freq_op="4ts"/>
+                <field id="field2D_oce_to_atm" field_ref="field2D_send" freq_op="5ts"/>
                 <!-- Define the interface for the outgoing field loaded from file to be received in atmosphere -->
                 <field id="field2D_restart" field_ref="field2D_read" freq_op="1y" />
             </coupler_out>
@@ -41,7 +41,7 @@
         <file_definition>
 
             <!-- Save field on file after 31d (The last send, corresponding to the run duration)-->
-            <file id="output_out" name="output_out_next" output_freq="31d" type="one_file" enabled="true">
+            <file id="output_out" name="output_out_next" output_freq="30d" type="one_file" enabled="true">
                 <field field_ref="field2D_oce_to_atm"  operation="instant" />
             </file>
 
@@ -70,8 +70,8 @@
 
          <variable_definition>
             <!-- Simulate month of January -->
-            <variable id="timestep_duration">6h</variable>
-            <variable id="duration">31d</variable>
+            <variable id="timestep_duration">1d</variable>
+            <variable id="duration">30d</variable>
         </variable_definition>
 
         <field_definition>
@@ -81,7 +81,7 @@
         <!-- Fields coming from ocean -->
         <coupler_in_definition>
             <coupler_in context="ocn::ocn" >
-                <field id="field2D_oce_to_atm" grid_ref="grid_2D" freq_op="4ts" freq_offset="5ts" operation="instant" read_access="true"/>
+                <field id="field2D_oce_to_atm" grid_ref="grid_2D" freq_op="5ts" freq_offset="6ts" operation="instant" read_access="true"/>
                 <!-- Restart field for atm is provided by ocean - freq_op big so to execute it only one time, offset to run it @ts=1 instead of @ts=0-->
                 <field id="field2D_restart" grid_ref="grid_2D" freq_op="1y" freq_offset="1ts" operation="instant" read_access="true"/>
             </coupler_in>

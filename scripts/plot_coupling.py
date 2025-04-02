@@ -45,7 +45,7 @@ class XiosCouplerPlotter:
             # Reciving calls are only done at coupling frequency (current limitation of XIOS)
             # Do not plot the first receive if there is a starting file recv
             # If there is no file to load, then plot the arrow also at the first timestep
-            if (ts-1) % recv_freq == 0 and (ts >= recv_offset or not restart_file):
+            if (ts-1) % recv_freq == 0 and (ts >= (recv_offset+1) or not restart_file):
 
                 ax.arrow(time + self.padding, self.figsize[1] - self.arrow_height, 0, self.arrow_height, head_width=0.1, head_length=0.05, 
                     color='r',
@@ -129,4 +129,4 @@ pl = XiosCouplerPlotter(arrow_height=2, padding=0.2)
 
 # Specific algorithm parameters for the plot
 #pl.plot(timesteps=20, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
-pl.plot(timesteps=20, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
+pl.plot(timesteps=30, send_freq=5, recv_freq=5, recv_offset=1, send_offset=0, restart_file=True, save_file=True)
