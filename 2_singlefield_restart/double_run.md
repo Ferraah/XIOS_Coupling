@@ -16,7 +16,7 @@ iodef_1.xml:
 This translates to:
 | freq_op | 4ts| 4ts
 | freq_offset | 0ts | 5ts|
-| (Restart field) freq_op | 1y | 1y
+| (Restart field) freq_op | 1y* | 1y*
 | (Restart field) freq_offset | 0ts | 1ts|
 | (Output field to file) freq_offset | 30d | ND|
 
@@ -32,7 +32,7 @@ iodef_2.xml:
 This translates to:
 | freq_op | 4ts| 4ts
 | freq_offset | 0ts | 5ts|
-| (Restart field) freq_op | 1y | 1y
+| (Restart field) freq_op | 1y* | 1y*
 | (Restart field) freq_offset | 0ts | 1ts|
 | (Output field to file) freq_offset | 31d | ND|
 
