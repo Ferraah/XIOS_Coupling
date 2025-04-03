@@ -1,2 +1,0 @@
-[proxy:0:0@kglobc1] HYD_spawn (../../../../../src/pm/i_hydra/libhydra/spawn/intel/hydra_spawn.c:152): execvp error on file ./6_points.exe (No such file or directory)
-[proxy:0:0@kglobc1] HYD_spawn (../../../../../src/pm/i_hydra/libhydra/spawn/intel/hydra_spawn.c:152): execvp error on file ./6_points.exe (No such file or directory)

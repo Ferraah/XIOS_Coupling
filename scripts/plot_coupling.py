@@ -129,4 +129,4 @@ pl = XiosCouplerPlotter(arrow_height=2, padding=0.2)
 
 # Specific algorithm parameters for the plot
 #pl.plot(timesteps=20, send_freq=4, recv_freq=4, recv_offset=5, send_offset=0, restart_file=True, save_file=True)
-pl.plot(timesteps=30, send_freq=5, recv_freq=5, recv_offset=1, send_offset=0, restart_file=True, save_file=True)
+pl.plot(timesteps=128, send_freq=4, recv_freq=4, recv_offset=1, send_offset=0, restart_file=True, save_file=True)

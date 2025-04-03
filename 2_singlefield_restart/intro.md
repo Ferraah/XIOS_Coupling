@@ -1,6 +1,8 @@
 # Monodirectional coupling of a single field with restart file
+# File structure of this example
+The folder of this example is composed by a source file of the coupled toy model and 3 `iodef` files corresponding to 3 different available runs. 
 
-This example shows the the coupling functionality between two contexts of their relative toy models (`ocn` and `atm`). Ocean is the model in charge of sending the field, to the Atmosphere model. The field is sent every 5 days, but the last one is saved to file instead.
+This example shows the the coupling functionality between two contexts of their relative toy models (`ocn` and `atm`). Ocean is the model in charge of sending the field, to the Atmosphere model. The field is sent every 5 days, but the last one is not received and saved to file instead. The time parameters are again unrealistic but useful to understand the algorithm with restart file.
 
 
 |  | Ocean | Atmosphere|
@@ -20,7 +22,7 @@ This translates to:
 
 ## Algorithm explaination
 
-As in OASIS we set a duration that is a multiple of the coupling frequency. We will start indexing the timesteps from 1 as discussed in the first example. To reproduce the Oasis lag logic, we offset the receiving of the first ocean send by 1+freq_op. Then, `@ts=1` atm will receive the restart file, and after a coupling period (`@ts=5`) the coupling field.
+As in OASIS we set a duration that is a multiple of the coupling frequency (`30d`). We will start indexing the timesteps from 1 as discussed in the first example. To reproduce the Oasis lag logic needed when the first get is done on the restarting file, we have to make sure that the send `@ts=5` has to be received by the atmosphere `@ts=6`, and so on. Then, `@ts=1` atm will receive the restart file, and after a coupling period (`@ts=6`) the coupling field.
 
 
 ### xios_send_field & xios_recv_field
@@ -34,7 +36,7 @@ IF (curr_timestep == 1) THEN
     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
 
 ELSE IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-    CALL xios_recv_field("field2D_oce_to_atm", field_recv)
+    CALL xios_recv_field("field2D_recv", field_recv)
     print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
 END IF
 ```
@@ -44,7 +46,8 @@ The way XIOS is implemented, `ocn` will be in charge to send the restarting fiel
     ...
 <!-- Restart file to READ (No output is done on this file) -->
 <!-- output_freq refers to the reading frequency. mode is set up on "read" -->
-<file id="output_restart" name="output_out" enabled="true" type="one_file" output_freq="1y" mode="read">
+<file id="restart_zerofield" name="restart_zerofield" enabled="true" type="one_file" output_freq="1y" mode="read">
+    <!-- name attribute should be the same of the field in the nc file -->
     <field id="field2D_read" name="field2D_oce_to_atm" grid_ref="grid_2D" operation="instant" read_access="true"  />
 </file> 
 
@@ -71,10 +74,18 @@ Then, in addition to the coupling field, we refer to this field from file to sen
     </coupler_in>
 </coupler_in_definition>
 ```
-
-# Output
+To save the last send, we can tell XIOS to save the field in a file with a frequency that is the same as the duration of the run, so to execute it one time and only at the end of the run:
+```xml
+<!-- Save field on file after 30d (The last send, corresponding to the run duration)-->
+<!-- It will create a new file called restart_next with the field and its timestemp-->
+<file id="restart_next" name="restart_next" output_freq="30d" type="one_file" enabled="true">
+    <field field_ref="field2D_oce_to_atm"  />
+</file>
 ```
- Model atm received    31.0000000000000       @ts =            1
+# Output
+The toy model is made to send a value which corresponds to the current timestep that is traversing. The value received @ts=1 is the one in the restart file, which corresponds to a field generated in a previous run (2025-03-31 18:00:00). Note how we are effectively sending the data with a lag. 
+```
+ Model atm received   0.000000000000000E+000  @ts =            1
  Model ocn sended @ts =           1
  Model ocn sended @ts =           2
  Model ocn sended @ts =           3
@@ -113,4 +124,4 @@ Then, in addition to the coupling field, we refer to this field from file to sen
  Model ocn sended @ts =          30
  Model            0  is done
 ```
-
+Using the command `ncdump restart_next.nc`, we should see our 10x10 field of 30's corresponding to the field on `2025-04-30 00:00:00`
