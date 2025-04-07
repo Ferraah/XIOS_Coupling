@@ -10,17 +10,18 @@
         <!-- Ocean field grid definition -->
         <grid_definition>
             <grid id="grid_2D">
-                <domain id="domain" type="rectilinear" ni_glo="10" nj_glo="10">
-                <generate_rectilinear_domain/>
-                </domain>
+                <domain id="domain"/>
             </grid>
         </grid_definition>
 
         <variable_definition>
-            <!-- Simulate month of January -->
-            <variable id="timestep_duration">1d</variable>
-            <variable id="duration">31d</variable>
+            <variable id="toymodel_timestep_duration">1d</variable>
+            <variable id="toymodel_duration">31d</variable>
+            <variable id="toymodel_ni_glo">10</variable>
+            <variable id="toymodel_nj_glo">10</variable>
+            <variable id="toymodel_type">rectilinear</variable>
         </variable_definition>
+
 
         <!-- Field reference for xios_send_field -->
         <field_definition>
@@ -57,10 +58,13 @@
         </grid_definition>
 
         <variable_definition>
-            <!-- Simulate month of January -->
-            <variable id="timestep_duration">1d</variable>
-            <variable id="duration">31d</variable>
+            <variable id="toymodel_timestep_duration">1d</variable>
+            <variable id="toymodel_duration">31d</variable>
+            <variable id="toymodel_ni_glo">10</variable>
+            <variable id="toymodel_nj_glo">10</variable>
+            <variable id="toymodel_type">rectilinear</variable>
         </variable_definition>
+
 
         <!-- Field reference for xios_recv_field --> 
         <field_definition>

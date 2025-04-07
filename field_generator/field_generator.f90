@@ -60,9 +60,9 @@ PROGRAM field_generator
   CALL xios_close_context_definition()
 
   ALLOCATE(field_A(ni_glo, nj_glo))
-  field_A(:,:)=rank
 
-  DO ts=1,1
+  DO ts=1,8
+    field_A = ts
     CALL xios_update_calendar(ts)
     CALL xios_send_field("field_A", field_A)
   ENDDO

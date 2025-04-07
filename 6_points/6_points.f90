@@ -1,217 +1,219 @@
-PROGRAM basic_couple
-    USE mod_wait
-    USE xios
-    IMPLICIT NONE
-    INCLUDE "mpif.h"
+program basic_couple
+    use xios
+    implicit none
+    include "mpif.h"
 
-    INTEGER :: ierr
-    INTEGER :: rank, size
-
-    ! Map the process rank to the role
-    LOGICAL :: is_server = .FALSE.
-    LOGICAL :: is_client_atm = .FALSE.
-    LOGICAL :: is_client_ocn = .FALSE.
-
-    INTEGER :: provided
-
-
-    CALL MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, ierr)
-    IF (provided < MPI_THREAD_MULTIPLE) THEN
-        PRINT *, "The MPI library does not provide the required level of thread support."
-        CALL MPI_FINALIZE(ierr)
-        STOP
-    END IF
-    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierr)
-    CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
-
-
-    IF (size /= 4) THEN
-        PRINT *, "This program must be run with 4 processes. Currently, there are ", size, " processes."
-        CALL MPI_FINALIZE(ierr)
-        STOP
-    END IF
-
-    ! Assign roles to the processes
-    IF (rank == size-1) THEN
-        is_server = .TRUE.
-    ELSE IF (rank == size-2) THEN
-        is_client_atm = .TRUE.
-    ELSE 
-        is_client_ocn = .TRUE.
-    END IF
-
-
-    if(is_server) THEN
-        CALL xios_init_server()
-    ELSE
-        IF (is_client_ocn) THEN
-            write (*,*) "I am client ocn with rank ", rank
-            CALL runModel("ocn")
-        ELSE IF (is_client_atm) THEN
-            write (*,*) "I am client atm with rank ", rank
-            CALL runModel("atm")
-        END IF
-        print *, "Model ", rank, " is done"
-        CALL xios_finalize()
-    ENDIF
-
-
-    CALL MPI_FINALIZE(ierr)
-
-CONTAINS
+    integer :: ierr, provided
+    integer :: rank, size
+    character(len=3) :: model_id
+    logical :: is_server = .false.
+    logical :: is_client_atm = .false.
+    logical :: is_client_ocn = .false.
     
-    ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
-    SUBROUTINE initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
-        CHARACTER(LEN=*), INTENT(IN) :: model_id
-        TYPE(xios_date), INTENT(OUT) :: x_start_date, x_end_date
-        TYPE(xios_duration), INTENT(OUT) :: x_timestep, x_duration
-        INTEGER, INTENT(OUT) :: freq_op
-        INTEGER :: ni_glo, nj_glo
-        INTEGER :: local_comm
-        TYPE(xios_context) :: ctx
-        TYPE(xios_duration) :: x_freq_op
-        INTEGER :: ierr
-        CHARACTER(LEN=255) :: tmp = "" ! Temporary string to store intermiediate xml valules
 
-        ! Initializing the runModel but local_com is not used in this example
-        CALL xios_initialize(model_id, return_comm = local_comm)
+    type :: toymodel_config
+        type(xios_date) :: start_date, end_date, curr_date
+        type(xios_duration) :: timestep, duration
+        integer :: freq_op_in_ts
+        integer :: ni_glo, nj_glo, ni, nj, ibegin, jbegin
+        integer :: data_dim, data_ni, data_nj, data_ibegin, data_jbegin
+        integer, allocatable :: data_i_index(:)
+        character(len=255) :: field_type
+    end type toymodel_config
 
-        write(*,*) "Model ", model_id, " is init  with rank ", rank
+    ! Mpi initialization
+    print *, "Initializing MPI..."
+    call MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, ierr)
+    if (provided < MPI_THREAD_MULTIPLE) then
+        print *, "The MPI library does not provide the required level of thread support."
+        call MPI_FINALIZE(ierr)
+        stop
+    end if
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierr)
+    call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 
-        ! Retrieve and set context
-        CALL xios_context_initialize(model_id, local_comm)
-        CALL xios_get_handle(model_id, ctx)
-        CALL xios_set_current_context(ctx)
+    print *, "MPI initialized. Rank: ", rank, " Size: ", size
 
-        ! Retrieve the starting timestep and duration
-        ierr = xios_getvar("duration", tmp)
+    if (size /= 4) then
+        print *, "This program must be run with 4 processes. Currently, there are ", size, " processes."
+        call MPI_FINALIZE(ierr)
+        stop
+    end if 
+    ! -------------------------------
+
+    if(rank==(size-1)) then
+        print *, "Rank 0: Initializing XIOS server..."
+        call xios_init_server()
+    else if (rank== (size-2)) then
+        model_id = "atm"
+        print *, "Rank 1: Running toy model with model_id = ", model_id
+        call run_toymodel()
+    else 
+        model_id = "ocn"
+        print *, "Rank ", rank, ": Running toy model with model_id = ", model_id
+        call run_toymodel()
+    end if
+
+    call MPI_FINALIZE(ierr)
+contains
+
+
+    subroutine run_toymodel()
+    implicit none
+        integer :: local_comm
+        type(xios_context) :: ctx
+        type(toymodel_config) :: config
+
+        call xios_initialize(trim(model_id), return_comm = local_comm)
+        call xios_context_initialize(trim(model_id), local_comm)
+        call xios_get_handle(trim(model_id), ctx)
+        call xios_set_current_context(ctx)
+        
+
+        ! Loading the configuration of the toy model
+        call load_toymodel_data(config) 
+
+        ! Set the data coming from the model in XIOS
+        call configure_xios_from_model(config)
+
+        ! Run the coupling
+        call run_coupling(config)
+
+        ! Finalize XIOS
+        call xios_context_finalize()
+        call xios_finalize()
+    end subroutine run_toymodel
+
+    
+    subroutine load_toymodel_data(config)
+        implicit none
+        type(toymodel_config), intent(out) :: config
+        character(len=255) :: tmp = ""
+        type(xios_duration) :: tmp2
+        integer :: i
+
+        print *, "Loading toy model configuration..."
+        ierr = xios_getvar("toymodel_duration", tmp)
         print *, "Duration: ", TRIM(tmp)
-        x_duration = xios_duration_convert_from_string(TRIM(tmp))
+        config%duration = xios_duration_convert_from_string(TRIM(tmp))
         tmp = ""
 
-        ierr = xios_getvar("timestep_duration", tmp)
+        ierr = xios_getvar("toymodel_timestep_duration", tmp)
         print *, "Timestep duration: ", TRIM(tmp)
-        x_timestep = xios_duration_convert_from_string(TRIM(tmp))
+        config%timestep = xios_duration_convert_from_string(TRIM(tmp))
         tmp = ""
 
-        CALL xios_set_timestep(x_timestep) 
+        ierr = xios_getvar("toymodel_ni_glo", tmp)
+        read (tmp, *) config%ni_glo
+        print *, "Global ni: ", config%ni_glo
+        tmp = ""
 
-        ! Retrieve the start date and calculate end date 
-        CALL xios_get_start_date(x_start_date)
-        x_end_date = x_start_date + x_duration
+        ierr = xios_getvar("toymodel_nj_glo", tmp)
+        read (tmp, *) config%nj_glo
+        print *, "Global nj: ", config%nj_glo
+        tmp = ""
+
+        ierr = xios_getvar("toymodel_type", tmp)
+        config%field_type = TRIM(tmp)
+        print *, "Field type: ", config%field_type
+        tmp = ""
 
         ! Getting the frequency of the operation
-        CALL xios_get_field_attr("field2D_oce_to_atm", freq_op=x_freq_op)
-        CALL xios_duration_convert_to_string(x_freq_op, tmp)
-        ! Remove the last two characters from the string to retrieve the pure number "(xx)ts"
+        CALL xios_get_field_attr("field2D_oce_to_atm", freq_op=tmp2)
+        CALL xios_duration_convert_to_string(tmp2, tmp)
         tmp = tmp(1:LEN_TRIM(tmp)-2)
-        ! Convert to integer
-        READ(tmp, *) freq_op
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        READ(tmp, *) config%freq_op_in_ts
+        print *, "Frequency of operation in timesteps: ", config%freq_op_in_ts
 
-        CALL xios_get_domain_attr("domain", ni_glo=ni_glo, nj_glo=nj_glo)
+        call xios_get_start_date(config%start_date)
+        print *, "Start date: ", config%start_date
 
-        ! Close the context definition
+        if(model_id == "ocn") then
 
+            if(config%ni_glo /=4 .or. config%nj_glo /=4) THEN
+                print *, "This example is only for 4x4 grid"
+                STOP
+            end if
 
-    END SUBROUTINE initEnvironment
+            config%data_dim = 1 ! Source data is 1D
+            config%data_ni = 8 ! Length of data 
+            config%data_ibegin = 0 ! Offset of data wrt ibegin
+            config%ni = config%ni_glo ! Local partition size
+            config%nj = config%nj_glo ! Local partition size
+            config%ibegin = 0 ! Offset of the local partition wrt the global grid
+            config%jbegin = 0 ! Offset of the local partition wrt the global grid
 
-    SUBROUTINE runModel(model_id)
-    IMPLICIT NONE
-        CHARACTER(LEN=*), INTENT(IN):: model_id
-        INTEGER :: curr_timestep
-        TYPE(xios_date) :: x_start_date, x_end_date, x_curr_date
-        TYPE(xios_duration) :: x_timestep, x_duration, x_freq_op
-        INTEGER :: freq_op
+            allocate(config%data_i_index(config%data_ni))
 
-        INTEGER :: ni_glo, nj_glo, ni, nj, ibegin, jbegin, data_ibegin, data_jbegin, data_dim, data_ni, data_nj, i
-        INTEGER, POINTER :: data_i_index(:), data_j_index(:)
-        DOUBLE PRECISION, POINTER :: field_send(:) ! 1D now
-        DOUBLE PRECISION, POINTER :: field_recv(:,:)
+            ! Checkboard distribution on two processes, 1D data source
+            IF (rank==0) THEN
+                config%data_i_index = [0, 2, 5, 7, 8, 10, 11, 13]
+            ELSE
+                config%data_i_index = [1, 3, 4, 6, 9, 12, 14, 15]
+            END IF
 
-        ! Init XIOS environment (context, timestep, duration, etc.) by loading parameters from xml and usual XIOS routines
-        CALL initEnvironment(model_id, x_start_date, x_end_date, x_timestep, x_duration, freq_op, ni_glo, nj_glo)
+ 
+        end if 
+    end subroutine load_toymodel_data
 
-        IF(ni_glo /=4 .or. nj_glo /=4) THEN
-            print *, "This example is only for 4x4 grid"
-            STOP
-        END IF
+    subroutine configure_xios_from_model(config)
+    implicit none
+        type(toymodel_config), intent(in) :: config
 
-        data_dim = 1 ! Source data is 1D
-        data_ni = 8 ! Length of data 
-        data_ibegin = 0 ! Offset of data wrt ibegin
-        ni = ni_glo ! Local partition size
-        nj = nj_glo ! Local partition size
-        ibegin = 0 ! Offset of the local partition wrt the global grid
-        jbegin = 0 ! Offset of the local partition wrt the global grid
+        print *, "Configuring XIOS with model data..."
+        call xios_set_timestep(config%timestep)
+        call xios_set_domain_attr("domain", ni_glo=config%ni_glo, nj_glo=config%nj_glo, type=config%field_type, ni=config%ni, nj=config%nj, ibegin=config%ibegin, jbegin=config%jbegin)
+        if (model_id=="ocn") call xios_set_domain_attr("domain", data_dim=config%data_dim, data_ni=config%data_ni, data_ibegin=config%data_ibegin, data_i_index=config%data_i_index)
+        call xios_close_context_definition()
+        print *, "XIOS configuration completed."
 
-        ALLOCATE(data_i_index(data_ni)) ! Indices ao
-        ALLOCATE(field_send(data_ni))
-        ALLOCATE(field_recv(4,4))
-        
+    end subroutine configure_xios_from_model
+ 
+
+    subroutine run_coupling(conf)
+    implicit none 
+        type(toymodel_config) :: conf 
+        double precision, allocatable :: field_send(:), field_recv(:,:)
+        integer :: curr_timestep, i 
+
+        if (model_id=="ocn") allocate(field_send(conf%data_ni))
+        if (model_id=="atm") allocate(field_recv(conf%ni_glo, conf%nj_glo))
+
         ! Checkboard distribution on two processes, 1D data source
         IF (rank==0) THEN
-            data_i_index = [(i, i=0, 14, 2)]
-            field_send = [(0, i=0, 14, 2)]
-        ELSE
-            data_i_index = [(i, i=1, 15, 2)]
-            field_send = [(1, i=1, 15, 2)]
+            field_send = 0
+        ELSE IF(rank==1) THEN
+            field_send = 1
         END IF
 
-        IF (model_id == "ocn") THEN
-            ! Add the local sizes and begin indices to the domain referred in the xml
-            CALL xios_set_domain_attr("domain", ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, data_ni=data_ni, data_i_index=data_i_index, data_ibegin=data_ibegin, data_dim=1)
-            print * , "Model ", model_id, " ni_glo = ", ni_glo, " nj_glo = ", nj_glo, " ni = ", ni, " nj = ", nj, " ibegin = ", ibegin, " jbegin = ", jbegin
-        END IF 
-
-        CALL xios_close_context_definition()
-        
-        
-        ! XIOS preference to start from 1
-        x_curr_date = x_start_date
+        conf%end_date = conf%start_date + conf%duration
+        conf%curr_date = conf%start_date
         curr_timestep = 1
 
-        print *, "Model ",model_id, " is starting"
+        print *, "Start dete: ", conf%start_date
+        print *, "End date: ", conf%end_date
 
+        do while (conf%curr_date < conf%end_date)
 
-        ! Iterate for the duration of the simulation (x_end ecluded)
-        DO WHILE (x_curr_date < x_end_date)
+            call xios_update_calendar(curr_timestep)
 
-            ! Communicate timestep increment to XIOS
-            CALL xios_update_calendar(curr_timestep)
+            if (model_id=="ocn") then
+                call xios_send_field("field2D_send", field_send)
+                print *, "OCN: sending field @ts=", curr_timestep, " with value ", field_send(1)
+            else if (model_id=="atm") then
+                if (mod(curr_timestep-1, conf%freq_op_in_ts) == 0) then
+                    call xios_recv_field("field2D_recv", field_recv)
+                    print *, "ATM: receiving field @ts=", curr_timestep, " with value ", field_recv(1,1)
+                end if
+            end if
 
+            conf%curr_date = conf%curr_date + conf%timestep
+            curr_timestep = curr_timestep + 1
+        end do
 
-            ! Ocean sends to atmosphere
-            IF(model_id == "ocn" ) THEN
+        print *, "Coupling loop completed."
 
-                ! Start sending field starting from 1 with a certain frequency
-                CALL xios_send_field("field2D_send", field_send)
-                print *, "Model ", model_id, " sended @ts =", curr_timestep
-
-            ! Atmosphere receives data from ocean
-            ELSE IF(model_id == "atm") THEN
-
-                ! Start receiving field starting from 1 with a certain frequency
-                !!!! "GET" call at the desired timestep EXPLICITLY
-                IF (modulo(curr_timestep-1, freq_op) == 0) THEN
-                    CALL xios_recv_field("field2D_recv", field_recv)
-                    print *, "Model ", model_id, " received " , field_recv(1,1), " @ts = ", curr_timestep
-                END IF
-
-            END IF
-            
-
-            ! Increase time counters
-            x_curr_date = x_curr_date + x_timestep ! Date
-            curr_timestep = curr_timestep + 1 ! Timestep
-
-        END DO
-        DEALLOCATE(field_send)
-        DEALLOCATE(field_recv)
-
-        CALL xios_context_finalize()
-
-    END SUBROUTINE runModel
-
-
-END PROGRAM basic_couple
+        if (allocated(field_send)) deallocate(field_send)
+        if (allocated(field_recv)) deallocate(field_recv)
+    end subroutine  run_coupling 
+end program
