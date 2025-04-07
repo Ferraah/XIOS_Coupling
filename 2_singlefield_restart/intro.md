@@ -1,6 +1,4 @@
 # Monodirectional coupling of a single field with restart file
-# File structure of this example
-The folder of this example is composed by a source file of the coupled toy model and 3 `iodef` files corresponding to 3 different available runs. 
 
 This example shows the the coupling functionality between two contexts of their relative toy models (`ocn` and `atm`). Ocean is the model in charge of sending the field, to the Atmosphere model. The field is sent every 5 days, but the last one is not received and saved to file instead. The time parameters are again unrealistic but useful to understand the algorithm with restart file.
 
