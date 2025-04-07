@@ -12,7 +12,6 @@ program basic_couple
         type(xios_duration) :: timestep, duration
         integer :: freq_op_in_ts
         integer :: ni_glo, nj_glo
-        integer :: data_dim, data_ni, data_ibegin
         character(len=255) :: field_type
     end type toymodel_config
 
@@ -117,15 +116,6 @@ contains
 
         call xios_get_start_date(config%start_date)
 
-        ! Toymodel process sets the parameters regarding the position of the data of its competence
-        if (model_id == "ocn") then
-            config%data_dim = 1
-            config%data_ni = config%ni_glo / (size-2)
-            config%data_ibegin = (rank-2) * config%data_ni
-        end if
-
-
-
 
     end subroutine load_toymodel_data
 
@@ -135,7 +125,6 @@ contains
 
         call xios_set_timestep(config%timestep)
         call xios_set_domain_attr("domain", ni_glo=config%ni_glo, nj_glo=config%nj_glo, type=config%field_type)
-        call xios_set_domain_attr("domain", data_dim=config%data_dim, data_ni=config%data_ni, data_ibegin=config%data_ibegin)
 
         call xios_close_context_definition()
 
@@ -148,7 +137,7 @@ contains
         double precision, pointer:: field_send(:,:), field_recv(:,:)
         integer :: curr_timestep
 
-        if(model_id=="ocn") allocate(field_send(conf%data_ni, conf%data_nj))
+        allocate(field_send(conf%ni_glo, conf%nj_glo))
         allocate(field_recv(conf%ni_glo, conf%nj_glo))
 
         conf%end_date = conf%start_date + conf%duration
