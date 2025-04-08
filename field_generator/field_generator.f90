@@ -61,8 +61,8 @@ PROGRAM field_generator
 
   ALLOCATE(field_A(ni_glo, nj_glo))
 
-  DO ts=1,8
-    field_A = ts
+  DO ts=1,1
+    field_A = 0
     CALL xios_update_calendar(ts)
     CALL xios_send_field("field_A", field_A)
   ENDDO
