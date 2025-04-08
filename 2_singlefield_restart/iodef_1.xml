@@ -4,23 +4,25 @@
 
     <context id="ocn">
 
-        <!-- Starting on January 1 -->
         <calendar type="Gregorian" time_origin="2025-01-01" start_date="2025-04-01"/>
 
         <!-- Ocean field grid definition -->
         <grid_definition>
-        <grid id="grid_2D">
-            <domain id="domain" type="rectilinear" ni_glo="10" nj_glo="10">
-            <generate_rectilinear_domain/>
-            </domain>
-        </grid>
+            <grid id="grid_2D">
+                <domain id="domain">
+                    <generate_rectilinear_domain/>
+                </domain>
+            </grid>
         </grid_definition>
 
         <variable_definition>
-            <!-- Simulate month of January -->
-            <variable id="timestep_duration">6h</variable>
-            <variable id="duration">30d</variable>
+            <variable id="toymodel_timestep_duration">6h</variable>
+            <variable id="toymodel_duration">30d</variable>
+            <variable id="toymodel_ni_glo">10</variable>
+            <variable id="toymodel_nj_glo">10</variable>
+            <variable id="toymodel_type">rectilinear</variable>
         </variable_definition>
+
 
         <!-- Field reference for xios_send_field -->
         <field_definition>
@@ -59,20 +61,24 @@
 
         <calendar type="Gregorian" time_origin="2025-01-01" start_date="2025-04-01"/>
 
-        <!-- Grid of the incoming ocean field (Same as the one in ocn context) -->
+        <!-- Ocean field grid definition -->
         <grid_definition>
-
             <grid id="grid_2D">
-                <domain id="domain"/>
+                <domain id="domain">
+                    <generate_rectilinear_domain/>
+                </domain>
             </grid>
-
         </grid_definition>
 
-         <variable_definition>
-            <!-- Simulate month of January -->
-            <variable id="timestep_duration">6h</variable>
-            <variable id="duration">30d</variable>
+
+        <variable_definition>
+            <variable id="toymodel_timestep_duration">6h</variable>
+            <variable id="toymodel_duration">30d</variable>
+            <variable id="toymodel_ni_glo">10</variable>
+            <variable id="toymodel_nj_glo">10</variable>
+            <variable id="toymodel_type">rectilinear</variable>
         </variable_definition>
+
 
         <field_definition>
             <field id="field2D_recv" field_ref="field2D_oce_to_atm" />
