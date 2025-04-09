@@ -40,3 +40,63 @@ This translates to:
 Through `ncdump`, we can see that in the updated restart file the field has been saved at the expected timesteps, i.e. `@ts=0` (the field coming from the retsart file), `@ts=120` the last send of the fisrt run, `@ts=124`(`@ts=224` in absolute time from the first run). After the single run we would see 0 and 224 because we do not save the intermediate restarting value. In conclusion, XIOS can implement a coupling algorithm that is "date" based and for which it can append different field timesteps to an existing restart file.\
 @TODO: The timestep between a run and another one should be the same for a restarting file?\
 @TODO: On restart XIOS will load the field from the last timestep in the restart file, without performing any "checks" on dates or time informations? 
+
+After `61 days` `./runSingle.sh`, our final restart file will contain the original restaring field and the new one.
+```
+ field2D_oce_to_atm =
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604 ;
+```
+After `./runDouble.sh`, our final restart file will contain the original restaring field, the field after `30d`, and finally after `31d`.
+```
+ field2D_oce_to_atm =
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  480, 480, 480, 480, 480, 480, 480, 480, 480, 480,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604,
+  604, 604, 604, 604, 604, 604, 604, 604, 604, 604 ;
+```
+
