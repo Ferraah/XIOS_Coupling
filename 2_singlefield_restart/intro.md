@@ -12,8 +12,9 @@ This example shows the the coupling functionality between two contexts of their 
 This translates to:
 | freq_op | 5ts| 5ts
 | freq_offset | 0ts | 6ts|
-| (Restart field) freq_op | 1y *| 1y*
-| (Restart field) freq_offset | 0ts | 1ts|
+| (Restart field) freq_op |  | 1y*
+| (Restart field) freq_offset |  | 1ts|
+| (Save field) output_freq | 30d | | 
 
 ![plot](2_singlefield_restart.png)
 \* arbitrarily large, so to load one time during the run

@@ -16,8 +16,8 @@ iodef_3.xml:
 This translates to:
 | freq_op | 4ts| 4ts
 | freq_offset | 0ts | 5ts|
-| (Restart field) freq_op | 1y* | 1y*
-| (Restart field) freq_offset | 0ts | 1ts|
-| (Output field to file) freq_offset | 61d | ND|
+| (Restart field) freq_op |  | 1y*
+| (Restart field) freq_offset |  | 1ts|
+| (Save field) output_freq | 61d | | 
 
 \* arbitrarily large, so to load one time during the run

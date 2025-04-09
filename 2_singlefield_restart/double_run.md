@@ -16,9 +16,9 @@ iodef_1.xml:
 This translates to:
 | freq_op | 4ts| 4ts
 | freq_offset | 0ts | 5ts|
-| (Restart field) freq_op | 1y* | 1y*
-| (Restart field) freq_offset | 0ts | 1ts|
-| (Output field to file) freq_offset | 30d | ND|
+| (Restart field) freq_op |  | 1y*
+| (Restart field) freq_offset |  | 1ts|
+| (Save field) output_freq | 30d | | 
 
 \* arbitrarily large, so to load one time during the run
 
@@ -32,9 +32,9 @@ iodef_2.xml:
 This translates to:
 | freq_op | 4ts| 4ts
 | freq_offset | 0ts | 5ts|
-| (Restart field) freq_op | 1y* | 1y*
-| (Restart field) freq_offset | 0ts | 1ts|
-| (Output field to file) freq_offset | 31d | ND|
+| (Restart field) freq_op |  | 1y*
+| (Restart field) freq_offset |  | 1ts|
+| (Save field) output_freq | 31d | | 
 
 ## Comparison
 Through `ncdump`, we can see that in the updated restart file the field has been saved at the expected timesteps, i.e. `@ts=0` (the field coming from the retsart file), `@ts=120` the last send of the fisrt run, `@ts=124`(`@ts=224` in absolute time from the first run). After the single run we would see 0 and 224 because we do not save the intermediate restarting value. In conclusion, XIOS can implement a coupling algorithm that is "date" based and for which it can append different field timesteps to an existing restart file.\
